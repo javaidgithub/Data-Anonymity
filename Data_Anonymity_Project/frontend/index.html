@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Anonymizer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Data Anonymizer</h1>
+    <form id="uploadForm">
+      <input type="file" id="fileInput" name="file" required />
+      <button type="submit">Anonymize</button>
+    </form>
+    <div id="result">
+      <h2>Result</h2>
+      <pre id="output"></pre>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    const output = document.getElementById("output");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const fileInput = document.getElementById("fileInput");
+      const file = fileInput.files[0];
+      const formData = new FormData();
+      formData.append("file", file);
+
+      output.textContent = "Processing...";
+
+      try {
+        const response = await fetch("http://localhost:8000/anonymize", {
+          method: "POST",
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.anonymized_csv) {
+          output.textContent = result.anonymized_csv;
+        } else if (result.anonymized_text) {
+          output.textContent = result.anonymized_text;
+        } else if (result.error) {
+          output.textContent = "Error: " + result.error;
+        } else {
+          output.textContent = "Unknown response format.";
+        }
+
+      } catch (error) {
+        output.textContent = "Request failed: " + error.message;
+      }
+    });
+  </script>
+</body>
+</html>
